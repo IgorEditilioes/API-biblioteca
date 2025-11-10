@@ -1,8 +1,8 @@
 from datetime import timedelta
 from django.utils import timezone
-from rest_framework import serializers
+from rest_framework import serializers, status
 from .models import Usuario, Livro, Autor, Emprestimo
-
+from rest_framework.response import Response
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,23 +10,37 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class LivroSerializer(serializers.ModelSerializer):
+    autor = serializers.SlugRelatedField(
+        queryset=Autor.objects.all(),   # permite enviar o ID ou nome existente
+        slug_field='nome'               # mostra o nome em vez do ID
+    )
     class Meta:
         model = Livro
-        fields = '__all__'
+        exclude = ['id']
         read_only_fields = ['disponivel'] 
+    
+
 
 class AutorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Autor
-        fields = '__all__'
+        fields = ['nome']
 
 class EmprestimoSerializer(serializers.ModelSerializer):
     esta_atrasado = serializers.SerializerMethodField()
+    usuario = serializers.SerializerMethodField()
+    livro = serializers.SerializerMethodField()
 
     class Meta:
         model = Emprestimo
-        fields = '__all__'
-        read_only_fields = ['data_devolucao_prevista', 'data_devolucao_real']
+        exclude = []
+        read_only_fields = ['data_devolucao_prevista', 'data_devolucao_real', 'usuario', 'data_emprestimo']
+
+    def get_usuario(self, obj):
+        return obj.usuario.username
+    
+    def get_livro(self, obj):
+        return obj.livro.titulo
 
 
     def get_esta_atrasado(self, obj):
@@ -57,17 +71,4 @@ class EmprestimoSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
         
     
-     # Valida a data de devolução real
-    def validate_data_devolucao_real(self, value):
-        if value:
-            data_emprestimo = self.instance.data_emprestimo if self.instance else None
-            if data_emprestimo and value < data_emprestimo:
-                raise serializers.ValidationError("Data de devolução não pode ser anterior ao empréstimo.")
-
-            # Se quiser apenas avisar (não impedir), pode logar ou retornar normalmente
-            data_prevista = self.instance.data_devolucao_prevista if self.instance else None
-            if data_prevista and value > data_prevista:
-                # Não levanta erro — apenas sinaliza atraso
-                pass
-        return value
     
