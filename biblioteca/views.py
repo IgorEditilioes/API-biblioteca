@@ -54,7 +54,7 @@ class EmprestimoViewSet(viewsets.ModelViewSet):
 
     # ✅ Adiciona filtros e ordenação
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ['livro__titulo', 'usuario__email', 'data_devolucao_real', 'data_devolucao_prevista']
+    filterset_fields = ['livro__titulo', 'usuario__email', 'usuario__username', 'data_devolucao_real', 'data_devolucao_prevista']
     ordering_fields = ['data_emprestimo', 'data_devolucao_real']
     search_fields = ['livro__titulo', 'usuario__email']
 
