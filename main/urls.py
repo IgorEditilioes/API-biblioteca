@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from biblioteca.views import AutorViewSet, LivroViewSet, UsuarioViewSet, EmprestimoViewSet
+from biblioteca.api.views import AutorViewSet, LivroViewSet, UsuarioViewSet, EmprestimoViewSet
 from rest_framework import routers
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
